@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import sharp from "sharp";
 import validator from "./utils/validator";
+const fs = require("fs");
 const { validationResult } = require("express-validator");
 
 // make an app instance
@@ -20,17 +21,23 @@ app.get("/img", validator, (req: express.Request, res: express.Response) => {
   let height = req.query.height as string;
   let inputPath = path.resolve("src/images");
   let outputPath = path.resolve("src/images/cache");
+  let outputFile = `${outputPath}/${filename}_${width}_${height}.jpg`;
 
-  // resizing image using sharp module
-  sharp(`${inputPath}/${filename}.jpg`)
-    .resize(parseInt(width), parseInt(height))
-    .toFile(`${outputPath}/${filename}_${width}_${height}.jpg`)
-    .then(() => {
-      res.sendFile(`${outputPath}/${filename}_${width}_${height}.jpg`);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  //checking if image is resized  to the same dimensions before to use cache if true
+  if (fs.existsSync(outputFile)) {
+    res.sendFile(outputFile);
+  } else {
+    // resizing image using sharp module
+    sharp(`${inputPath}/${filename}.jpg`)
+      .resize(parseInt(width), parseInt(height))
+      .toFile(outputFile)
+      .then(() => {
+        res.sendFile(outputFile);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
 });
 
 // configure port
