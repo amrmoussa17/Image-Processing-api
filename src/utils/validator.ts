@@ -1,5 +1,4 @@
-import express from "express";
-const { query } = require("express-validator");
+import {query} from "express-validator";
 
 // validator middleware
 const validator = [
